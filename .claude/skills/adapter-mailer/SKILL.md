@@ -39,7 +39,7 @@ All classes under `Handler/` are invokable (`__invoke()`). Only configured handl
 - `sendBatch()` reuses one SMTP connection across all messages (keepalive + NOOP health-check).
 - Logging / caching = integration-layer concern — Decorator on `MailerInterface`, never inside the package.
 
-## CONTRACTS (from jardissupport/contract)
+## CONTRACTS (from jardissupport/contracts)
 | Interface | Implementation |
 |-----------|----------------|
 | `MailerInterface` | `Mailer` — `send(MailMessageInterface): void` |
@@ -172,6 +172,6 @@ MAIL_FROM_ADDRESS, MAIL_FROM_NAME
 - **Domain:** never imports mailer classes.
 
 ## DEPENDENCIES
-- `jardissupport/contract ^1.0` — MailerInterface, MailMessageInterface, MailTransportInterface
+- `jardissupport/contracts ^1.0` — MailerInterface, MailMessageInterface, MailTransportInterface
 - `ext-openssl` — TLS / SSL
 - `ext-mbstring` — UTF-8 header encoding
