@@ -11,7 +11,7 @@
 
 **Transactional emails without the bloat.** A lean SMTP mailer for PHP built on raw sockets — covers order confirmations, password resets, and notifications. No Swiftmailer, no Symfony Mailer, no dependency tree. Just SMTP over a socket.
 
-<small>* Zero external PHP packages. Only `ext-openssl` + `ext-mbstring` + `jardissupport/contract` (interfaces only).</small>
+<small>* Zero external PHP packages. Only `ext-openssl` + `ext-mbstring` + `jardissupport/contracts` (interfaces only).</small>
 
 ---
 
