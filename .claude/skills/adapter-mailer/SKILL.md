@@ -18,11 +18,10 @@ Mailer (implements MailerInterface)
     DefaultFrom        if SmtpConfig->fromAddress != null
     MessageValidator   always (validates From, To, Body)
   Encoder (MailMessage → Envelope):
-    MimeEncoder        MIME assembly, Base64, QP, RFC 2047
+    MimeEncoder        builds the raw MIME message
   Transport (Envelope → void):
-    SmtpTransport      Socket SMTP — EHLO, STARTTLS / implicit SSL,
-                       AUTH LOGIN + AUTH PLAIN, NOOP health-check,
-                       silent reconnect, keepalive for batch
+    SmtpTransport      SMTP over raw sockets — STARTTLS / implicit SSL, AUTH,
+                       health-check + silent reconnect, keepalive for batch
   Retry (internal to Mailer):
     Exponential backoff on SmtpConnectionException + temporary 4xx
     Permanent 5xx throws immediately
