@@ -4,7 +4,7 @@ description: SMTP mailer with STARTTLS, AUTH, HTML/text, attachments, retry, kee
 user-invocable: false
 zone: post-active
 persona: C
-prerequisites: [rules-architecture, rules-patterns]
+prerequisites: [foundation-architecture, foundation-patterns]
 next: []
 ---
 
