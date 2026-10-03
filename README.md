@@ -263,9 +263,9 @@ $mailer = new Mailer(
 
 ---
 
-## Jardis Foundation Integration
+## Jardis Kernel Integration
 
-In a Jardis DDD project, the mailer is automatically configured via ENV:
+In a Jardis DDD project, `jardiscore/kernel`'s Bootstrap-Packer (`Bootstrap\BuildDomainKernelFromEnv`) configures the mailer from ENV:
 
 ```env
 MAIL_HOST=smtp.example.com
@@ -278,7 +278,7 @@ MAIL_FROM_ADDRESS=noreply@example.com
 MAIL_FROM_NAME=My Application
 ```
 
-The `MailerHandler` in `JardisApp` builds the mailer and registers it in the ServiceRegistry. Your application code receives `MailerInterface` via injection — without ever importing `Mailer` directly.
+The packer builds the mailer and hands it to the immutable `DomainKernel`. A generated domain facade receives the `DomainKernel` via its constructor; your application code reads `MailerInterface` via `$kernel->mailer()` — without ever importing `Mailer` directly. The mailer also works standalone, without the kernel.
 
 ---
 
