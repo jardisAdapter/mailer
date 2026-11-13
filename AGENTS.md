@@ -9,6 +9,7 @@ SMTP mailer on raw sockets with STARTTLS, AUTH LOGIN/PLAIN, MIME encoding, attac
 - **Pipeline:** Transformers (`DefaultFrom`, `MessageValidator`) → Encoder (`MimeEncoder` → `Envelope`) → Transport (`SmtpTransport`). Only configured handlers are instantiated; `Mailer` has zero business logic.
 - **Retry is internal to Mailer** (not a wrapping handler): exponential backoff (`retryDelayMs`) on `SmtpConnectionException` and temporary 4xx errors; permanent 5xx errors are thrown immediately. `maxRetries: 0` = no retry.
 - **Batch send shares one SMTP connection:** `sendBatch([$msg1, $msg2])` returns `BatchResult` with `successCount()`/`failureCount()`/`successful()`/`failed()`. `SmtpTransport` uses a NOOP health-check before connection reuse and silent reconnect on a dead connection.
+- **Kernel mail service (`MailServiceInterface`, since 1.1):** `Mailer::sendMail($to, $subject, $text, $html, $options)` is the ready-made call behind `$kernel->mail()`; `$to` is `string|list<string>`, `$options` only `from`/`fromName`/`cc`/`bcc`/`replyTo`/`headers` (unknown key → `\InvalidArgumentException`, as is neither text nor HTML or `fromName` without `from`). The message is built by `Handler\BuildMailMessage`, then sent via `send()`; attachments stay with `send()`.
 - **Custom transport via `Closure(Envelope): void`** is injectable (testing / API send / log-to-file). All exceptions implement `JardisSupport\Contract\Mailer\MailerExceptionInterface` — generic catch is possible.
 
 ## Full reference

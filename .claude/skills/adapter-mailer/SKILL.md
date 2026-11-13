@@ -9,11 +9,12 @@ next: []
 ---
 
 # MAILER_COMPONENT_SKILL
-> jardisadapter/mailer v1.0 | NS: `JardisAdapter\Mailer` | SMTP on raw sockets | PHP 8.2+
+> jardisadapter/mailer v1.1 | NS: `JardisAdapter\Mailer` | SMTP on raw sockets | PHP 8.2+
 
 ## ARCHITECTURE
 ```
-Mailer (implements MailerInterface)
+Mailer (implements MailerInterface, MailServiceInterface)
+  sendMail():           BuildMailMessage (args → MailMessage) → send()
   Transformers (MailMessage → MailMessage, built from SmtpConfig):
     DefaultFrom        if SmtpConfig->fromAddress != null
     MessageValidator   always (validates From, To, Body)
@@ -42,6 +43,7 @@ All classes under `Handler/` are invokable (`__invoke()`). Only configured handl
 | Interface | Implementation |
 |-----------|----------------|
 | `MailerInterface` | `Mailer` — `send(MailMessageInterface): void` |
+| `MailServiceInterface` | `Mailer` — `sendMail(string\|list<string> $to, string $subject, ?string $text, ?string $html, array $options): void` (kernel service, `$kernel->mail()`) |
 | `MailMessageInterface` | `MailMessage` — getters return arrays |
 | `MailTransportInterface` | `SmtpTransport` — `send(string, array, string): void` + `disconnect()` |
 | `MailerExceptionInterface` | all 4 exceptions implement this |
@@ -75,6 +77,22 @@ $result->isAllSuccessful();  // bool
 $result->successful();       // list<MailMessage>
 $result->failed();           // list<['message' => MailMessage, 'error' => Throwable]>
 ```
+
+## KERNEL SERVICE — sendMail() (since 1.1)
+Ready-made call, no message object: domain code calls `$kernel->mail()?->sendMail(...)`.
+```php
+$mailer->sendMail(
+    to: 'anna@example.com',            // string | list<string>
+    subject: 'Hello',
+    text: 'Plain',                     // text and/or html required
+    html: '<p>Html</p>',
+    options: ['from' => 'a@x.com', 'fromName' => 'A', 'cc' => [...], 'bcc' => [...],
+              'replyTo' => 'r@x.com', 'headers' => ['X-Id' => '1']],
+);
+```
+- Neither text nor HTML → `\InvalidArgumentException`. Unknown option key → `\InvalidArgumentException`. `fromName` without `from` → `\InvalidArgumentException`.
+- Absent `from` → configured `SmtpConfig->fromAddress` (DefaultFrom). Transfer failure → `MailerExceptionInterface`.
+- Internally: `Handler\BuildMailMessage` builds the `MailMessage`, `send()` delivers (retry etc. unchanged). Attachments/inline images: use `send()` with a `MailMessage`.
 
 ## MAILMESSAGE — TRIPLE SURFACE
 Immutable VO. Builder (`with*`) → Getter (Contract, arrays) → Property (Handler access, typed).
@@ -171,6 +189,6 @@ MAIL_FROM_ADDRESS, MAIL_FROM_NAME
 - **Domain:** never imports mailer classes.
 
 ## DEPENDENCIES
-- `jardissupport/contracts ^1.0` — MailerInterface, MailMessageInterface, MailTransportInterface
+- `jardissupport/contracts ^2.19` — MailerInterface, MailServiceInterface, MailMessageInterface, MailTransportInterface
 - `ext-openssl` — TLS / SSL
 - `ext-mbstring` — UTF-8 header encoding
