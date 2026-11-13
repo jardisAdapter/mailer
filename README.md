@@ -280,6 +280,29 @@ MAIL_FROM_NAME=My Application
 
 The packer builds the mailer and hands it to the immutable `DomainKernel`. A generated domain facade receives the `DomainKernel` via its constructor; your application code reads `MailerInterface` via `$kernel->mailer()` — without ever importing `Mailer` directly. The mailer also works standalone, without the kernel.
 
+### Kernel service contract (since 1.1)
+
+`Mailer` also implements `JardisSupport\Contract\Mailer\MailServiceInterface`, the ready-made mail call of the kernel. Domain code does not build a message object and imports no adapter class:
+
+```php
+$kernel->mail()?->sendMail(
+    to: ['anna@example.com', 'ben@example.com'],   // string or list<string>
+    subject: 'Your order',
+    text: 'Thank you for your order.',              // text and/or html; neither -> InvalidArgumentException
+    html: '<p>Thank you for your order.</p>',
+    options: [                                      // all optional
+        'from' => 'shop@example.com',
+        'fromName' => 'Shop',                       // requires 'from'
+        'cc' => ['sales@example.com'],
+        'bcc' => ['audit@example.com'],
+        'replyTo' => 'support@example.com',
+        'headers' => ['X-Order' => '4711'],
+    ],
+);
+```
+
+Absent options fall back to the configured defaults (`MAIL_FROM_ADDRESS`/`MAIL_FROM_NAME`). An unknown option key throws `\InvalidArgumentException`; transfer failures throw a `MailerExceptionInterface`. `sendMail()` builds a `MailMessage` and calls `send()`; for attachments and embedded images keep using `MailerInterface::send()`.
+
 ---
 
 ## Development
