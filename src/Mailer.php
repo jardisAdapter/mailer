@@ -11,17 +11,19 @@ use JardisAdapter\Mailer\Data\Envelope;
 use JardisAdapter\Mailer\Data\MailMessage;
 use JardisAdapter\Mailer\Exception\SmtpConnectionException;
 use JardisAdapter\Mailer\Exception\SmtpTransportException;
+use JardisAdapter\Mailer\Handler\BuildMailMessage;
 use JardisAdapter\Mailer\Handler\DefaultFrom;
 use JardisAdapter\Mailer\Handler\MessageValidator;
 use JardisAdapter\Mailer\Handler\MimeEncoder;
 use JardisAdapter\Mailer\Handler\SmtpTransport;
 use JardisSupport\Contract\Mailer\MailerInterface;
 use JardisSupport\Contract\Mailer\MailMessageInterface;
+use JardisSupport\Contract\Mailer\MailServiceInterface;
 
 /**
  * Mail service — pure orchestrator that builds handler pipeline from config.
  */
-final class Mailer implements MailerInterface
+final class Mailer implements MailerInterface, MailServiceInterface
 {
     /** @var list<Closure(MailMessage): MailMessage> */
     private readonly array $transformers;
@@ -61,6 +63,21 @@ final class Mailer implements MailerInterface
 
         $envelope = ($this->encoder)($message);
         $this->deliver($envelope);
+    }
+
+    /**
+     * Kernel mail service: one ready-made call, builds the message and sends it via send().
+     *
+     * @inheritDoc
+     */
+    public function sendMail(
+        string|array $to,
+        string $subject,
+        ?string $text = null,
+        ?string $html = null,
+        array $options = []
+    ): void {
+        $this->send((new BuildMailMessage())($to, $subject, $text, $html, $options));
     }
 
     private function deliver(Envelope $envelope): void
